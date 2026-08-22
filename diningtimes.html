@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ERAU Dining Status</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- iOS PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Dining Status">
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen px-4 py-6 font-sans antialiased max-w-md mx-auto">
+
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
+        <div>
+            <h1 class="text-xl font-bold tracking-tight">🍔 ERAU Dining</h1>
+            <p id="current-time" class="text-xs text-zinc-400">Loading time...</p>
+        </div>
+        <button onclick="renderDiningStatus()" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">
+            Refresh
+        </button>
+    </header>
+
+    <!-- Main Container -->
+    <main class="space-y-6">
+        <!-- Open Now Section -->
+        <section>
+            <h2 class="text-sm font-semibold tracking-wider text-emerald-400 uppercase mb-3 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Open Now
+            </h2>
+            <div id="open-list" class="space-y-3">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <!-- Closed Section -->
+        <section>
+            <h2 class="text-sm font-semibold tracking-wider text-zinc-400 uppercase mb-3">Closed / Coming Up</h2>
+            <div id="closed-list" class="space-y-3">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        const DINING_DATA = [
+            {name: "Boundless", schedule: {0: [["07:00", "21:00"]], 1: [["07:00", "21:00"]], 2: [["07:00", "21:00"]], 3: [["07:00", "21:00"]], 4: [["07:00", "21:00"]], 5: [["09:00", "21:00"]], 6: [["09:00", "21:00"]]}},
+            {name: "Simple Servings", schedule: {0: [["07:00", "14:30"], ["16:00", "21:00"]], 1: [["07:00", "14:30"], ["16:00", "21:00"]], 2: [["07:00", "14:30"], ["16:00", "21:00"]], 3: [["07:00", "14:30"], ["16:00", "21:00"]], 4: [["07:00", "14:30"], ["16:00", "21:00"]], 5: [["09:00", "14:30"], ["16:00", "21:00"]], 6: [["09:00", "14:30"], ["16:00", "21:00"]]}},
+            {name: "LW EATS Food Truck", schedule: {0: [["11:00", "15:00"]], 1: [["11:00", "15:00"]], 2: [["11:00", "15:00"]], 3: [["11:00", "15:00"]], 4: [["11:00", "15:00"]]}},
+            {name: "Chick-Fil-A", schedule: {0: [["07:30", "21:00"]], 1: [["07:30", "21:00"]], 2: [["07:30", "21:00"]], 3: [["07:30", "21:00"]], 4: [["07:30", "18:00"]], 5: [["11:00", "18:00"]]}},
+            {name: "Late Night", schedule: {0: [["21:30", "02:00"]], 1: [["21:30", "02:00"]], 2: [["21:30", "02:00"]], 3: [["21:30", "02:00"]], 4: [["21:30", "02:00"]], 5: [["21:30", "02:00"]], 6: [["21:30", "02:00"]]}},
+            {name: "Eagle Mart", schedule: {0: [["12:00", "02:00"]], 1: [["12:00", "02:00"]], 2: [["12:00", "02:00"]], 3: [["12:00", "02:00"]], 4: [["12:00", "02:00"]], 5: [["12:00", "02:00"]], 6: [["12:00", "02:00"]]}},
+            {name: "Qdoba", schedule: {0: [["10:00", "19:00"]], 1: [["10:00", "19:00"]], 2: [["10:00", "19:00"]], 3: [["10:00", "19:00"]], 4: [["10:00", "19:00"]], 6: [["10:00", "19:00"]]}},
+            {name: "Flight Café", schedule: {0: [["07:00", "14:30"]], 1: [["07:00", "14:30"]], 2: [["07:00", "14:30"]], 3: [["07:00", "14:30"]], 4: [["07:00", "14:30"]]}},
+            {name: "Starbucks", schedule: {0: [["06:00", "22:00"]], 1: [["06:00", "22:00"]], 2: [["06:00", "22:00"]], 3: [["06:00", "22:00"]], 4: [["06:00", "18:00"]], 5: [["13:00", "18:00"]], 6: [["13:00", "22:00"]]}},
+            {name: "Eagle Bites", schedule: {0: [["07:30", "09:30"], ["10:30", "13:00"]], 1: [["07:30", "09:30"], ["10:30", "13:00"]], 2: [["07:30", "09:30"], ["10:30", "13:00"]], 3: [["07:30", "09:30"], ["10:30", "13:00"]], 4: [["07:30", "09:30"], ["10:30", "13:00"]]}},
+            {name: "Propellers", schedule: {0: [["10:30", "15:30"], ["17:30", "00:00"]], 1: [["10:30", "15:30"], ["17:30", "00:00"]], 2: [["10:30", "15:30"], ["17:30", "00:00"]], 3: [["10:30", "15:30"], ["17:30", "00:00"]], 4: [["10:30", "15:30"], ["17:30", "00:00"]], 5: [["17:30", "00:00"]], 6: [["17:30", "00:00"]]}},
+            {name: "Refueling Station", schedule: {0: [["07:15", "21:00"]], 1: [["07:15", "21:00"]], 2: [["07:15", "21:00"]], 3: [["07:15", "21:00"]], 4: [["07:15", "19:00"]], 5: [["11:00", "19:00"]], 6: [["11:00", "19:00"]]}},
+            {name: "Fuselage", schedule: {0: [["08:00", "14:30"]], 1: [["08:00", "14:30"]], 2: [["08:00", "14:30"]], 3: [["08:00", "14:30"]], 4: [["08:00", "14:30"]]}},
+            {name: "Virt. Dining Concept", schedule: {0: [["17:30", "00:00"]], 1: [["17:30", "00:00"]], 2: [["17:30", "00:00"]], 3: [["17:30", "00:00"]], 4: [["17:30", "00:00"]], 5: [["17:30", "00:00"]], 6: [["17:30", "00:00"]]}}
+        ];
+
+        function makeTimePretty(timeStr) {
+            let [h, m] = timeStr.split(':').map(Number);
+            let period = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            return `${h}:${m.toString().padStart(2, '0')} ${period}`;
+        }
+
+        function renderDiningStatus() {
+            const now = new Date();
+            const todayDay = (now.getDay() + 6) % 7; // Convert JS Sunday(0)-Saturday(6) to Mon(0)-Sun(6)
+            const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+            document.getElementById('current-time').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            let openHTML = '';
+            let closedHTML = '';
+
+            DINING_DATA.forEach(item => {
+                let shifts = item.schedule[todayDay] || [];
+                let isOpen = false;
+                let closingTimeStr = '';
+
+                shifts.forEach(([openS, closeS]) => {
+                    if (openS <= closeS) {
+                        if (currentTimeStr >= openS && currentTimeStr <= closeS) {
+                            isOpen = true;
+                            closingTimeStr = closeS;
+                        }
+                    } else { // Midnight crossover
+                        if (currentTimeStr >= openS || currentTimeStr <= closeS) {
+                            isOpen = true;
+                            closingTimeStr = closeS;
+                        }
+                    }
+                });
+
+                if (isOpen) {
+                    openHTML += `
+                        <div class="bg-zinc-900 border border-zinc-800 p-3.5 rounded-xl flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-sm text-white">${item.name}</h3>
+                                <p class="text-xs text-zinc-400">Open until ${makeTimePretty(closingTimeStr)}</p>
+                            </div>
+                            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium border border-emerald-500/20">Open</span>
+                        </div>`;
+                } else {
+                    closedHTML += `
+                        <div class="bg-zinc-900/50 border border-zinc-800/60 p-3 rounded-xl flex justify-between items-center opacity-75">
+                            <div>
+                                <h3 class="font-medium text-sm text-zinc-300">${item.name}</h3>
+                                <p class="text-xs text-zinc-500">Closed</p>
+                            </div>
+                        </div>`;
+                }
+            });
+
+            document.getElementById('open-list').innerHTML = openHTML || '<p class="text-xs text-zinc-500 italic">aw man, everything is closed :(</p>';
+            document.getElementById('closed-list').innerHTML = closedHTML;
+        }
+
+        renderTrust = setInterval(renderDiningStatus, 30000);
+        renderDiningStatus();
+    </script>
+</body>
+</html>
