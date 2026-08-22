@@ -181,7 +181,7 @@
                         timeStr = item.nextOpeningDt.toLocaleDateString([], { weekday: 'long' });
                     } else {
                         // Today; show the time (e.g., "10:00 am")
-                        let rawTime = item.nextOpeningDt.toLocaleTimeString([], { hour: '2-digest', minute: '2-digit', hour12: false });
+                        let rawTime = item.nextOpeningDt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                         if (rawTime === '12:00') {
                             timeStr = 'noon';
                         } else if (rawTime === '00:00') {
