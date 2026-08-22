@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERAU Dining Status</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- iOS PWA Meta Tags -->
@@ -73,13 +74,13 @@
 
         function renderDiningStatus() {
             const now = new Date();
-            const todayDay = (now.getDay() + 6) % 7; // Convert JS Sunday(0)-Saturday(6) to Mon(0)-Sun(6)
+            const todayDay = (now.getDay() + 6) % 7; 
             const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
             document.getElementById('current-time').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             let openHTML = '';
-            let closedHTML = '';
+            let closedItems = [];
 
             DINING_DATA.forEach(item => {
                 let shifts = item.schedule[todayDay] || [];
@@ -92,7 +93,7 @@
                             isOpen = true;
                             closingTimeStr = closeS;
                         }
-                    } else { // Midnight crossover
+                    } else { 
                         if (currentTimeStr >= openS || currentTimeStr <= closeS) {
                             isOpen = true;
                             closingTimeStr = closeS;
@@ -110,14 +111,76 @@
                             <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium border border-emerald-500/20">Open</span>
                         </div>`;
                 } else {
-                    closedHTML += `
-                        <div class="bg-zinc-900/50 border border-zinc-800/60 p-3 rounded-xl flex justify-between items-center opacity-75">
-                            <div>
-                                <h3 class="font-medium text-sm text-zinc-300">${item.name}</h3>
-                                <p class="text-xs text-zinc-500">Closed</p>
-                            </div>
-                        </div>`;
+                    let nextOpeningDt = null;
+                    let minOpeningInMinutes = Infinity;
+
+                    for (let offset = 0; offset < 8; offset++) {
+                        let checkDay = (todayDay + offset) % 7;
+                        let dayShifts = item.schedule[checkDay] || [];
+
+                        for (let [openS, closeS] of dayShifts) {
+                            let [oh, om] = openS.split(':').map(Number);
+                            let candidate = new Date(now);
+                            candidate.setDate(now.getDate() + offset);
+                            candidate.setHours(oh, om, 0, 0);
+
+                            if (candidate > now) {
+                                let diffMins = Math.floor((candidate - now) / 60000);
+                                if (diffMins < minOpeningInMinutes) {
+                                    minOpeningInMinutes = diffMins;
+                                    nextOpeningDt = candidate;
+                                }
+                            }
+                        }
+                        if (nextOpeningDt !== null) break;
+                    }
+
+                    closedItems.push({ name: item.name, nextOpeningDt, minOpeningInMinutes });
                 }
+            });
+
+            // Sort closed locations with soonest to open at the top
+            closedItems.sort((a, b) => a.minOpeningInMinutes - b.minOpeningInMinutes);
+
+            let closedHTML = '';
+            closedItems.forEach(item => {
+                let timeStr = 'unknown';
+                
+                if (item.nextOpeningDt) {
+                    // Calculate day difference to check if it's 2+ days away
+                    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const openingMidnight = new Date(item.nextOpeningDt.getFullYear(), item.nextOpeningDt.getMonth(), item.nextOpeningDt.getDate());
+                    const dayDiff = Math.round((openingMidnight - nowMidnight) / (1000 * 60 * 60 * 24));
+
+                    if (dayDiff >= 2) {
+                        // 2 or more days away: show the day of the week (e.g., "Monday")
+                        timeStr = item.nextOpeningDt.toLocaleDateString([], { weekday: 'long' });
+                    } else {
+                        // Today or tomorrow: show the time (e.g., "10:00 am")
+                        timeStr = item.nextOpeningDt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+                    }
+                }
+                
+                let hours = Math.floor(item.minOpeningInMinutes / 60);
+                let mins = item.minOpeningInMinutes % 60;
+                let timeRemStr = hours > 0 ? `${hours}h${mins}m` : `${mins}m`;
+
+                // Color rules: > 60m = red, < 15m = yellow, otherwise = orange
+                let colorClass = 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+                if (item.minOpeningInMinutes > 60) {
+                    colorClass = 'bg-red-500/10 text-red-400 border-red-500/20';
+                } else if (item.minOpeningInMinutes < 15) {
+                    colorClass = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                }
+
+                closedHTML += `
+                    <div class="bg-zinc-900/50 border border-zinc-800/60 p-3 rounded-xl flex justify-between items-center opacity-75">
+                        <div>
+                            <h3 class="font-medium text-sm text-zinc-300">${item.name}</h3>
+                            <p class="text-xs text-zinc-500">Closed until ${timeStr}</p>
+                        </div>
+                        <span class="${colorClass} text-xs px-2.5 py-1 rounded-full font-medium border">Opens in ${timeRemStr}</span>
+                    </div>`;
             });
 
             document.getElementById('open-list').innerHTML = openHTML || '<p class="text-xs text-zinc-500 italic">aw man, everything is closed :(</p>';
