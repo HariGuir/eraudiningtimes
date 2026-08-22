@@ -24,12 +24,15 @@
     <!-- Header -->
     <header class="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
         <div>
-            <h1 class="text-xl font-bold tracking-tight">🍔 ERAU Dining</h1>
-            <p id="current-time" class="text-xs text-zinc-400">Loading time...</p>
+            <h1 class="text-xl font-bold tracking-tight">🍔 man im hungry</h1>
+            <p class="text-xs text-zinc-400">(if you're reading this you trust me not to hack you)</p>
         </div>
-        <button onclick="renderDiningStatus()" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">
-            Refresh
-        </button>
+        <div class="flex flex-col items-end">
+            <button onclick="renderDiningStatus()" class="bg-zinc-800 hover:bg-zinc-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">
+                Refresh
+            </button>
+            <p id="current-time" class="text-xs text-zinc-400 mt-1">Loading time...</p>
+        </div>
     </header>
 
     <!-- Main Container -->
