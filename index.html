@@ -76,6 +76,9 @@
         ];
 
         function makeTimePretty(timeStr) {
+            if (timeStr == '12:00') return 'noon';
+            if (timeStr == '00:00') return 'midnight';
+            
             let [h, m] = timeStr.split(':').map(Number);
             let period = h >= 12 ? 'PM' : 'AM';
             h = h % 12 || 12;
@@ -167,7 +170,14 @@
                         timeStr = item.nextOpeningDt.toLocaleDateString([], { weekday: 'long' });
                     } else {
                         // Today or tomorrow: show the time (e.g., "10:00 am")
-                        timeStr = item.nextOpeningDt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+                        let rawTime = item.nextOpeningDt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                        if (rawTime === '12:00') {
+                            timeStr = 'noon';
+                        } else if (rawTime === '00:00') {
+                            timeStr = 'midnight';
+                        } else {
+                            timeStr = item.nextOpeningDt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+                        }
                     }
                 }
                 
