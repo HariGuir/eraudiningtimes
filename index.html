@@ -58,6 +58,66 @@
 
     <!-- JavaScript Logic -->
     <script>
+        // Descriptive metadata for locations (Location, Description)
+        const LOCATION_METADATA = {
+            "Chick-Fil-A": {
+                location: "Student Union - Ground Floor",
+                description: "Chick-Fil-A is one of the most popular destinations on campus! Look for a variety of chicken sandwiches, salads, wraps, breakfast items and milkshakes."
+            },
+            "Boundless Buffet": {
+                location: "Residence Hall 2 - Northeast Exterior",
+                description: "Boundless is the primary All-You-Care-To-Eat\u2122 dining hall on campus. Find distinct stations serving made-to-order burgers, pizza, custom sandwiches and wraps, a Mongolian grill, plant-based choices, and allergen-free meals."
+            },
+            "Qdoba": {
+                location: "Student Union - Ground Floor",
+                description: "Customizable burritos, bowls, tacos, quesadillas, chips with fresh queso and house-made guacamole."
+            },
+            "Refueling Station": {
+                location: "Student Union - Ground Floor",
+                description: "The Refueling Station features a variety of options including a Boar's Head Deli, Burgershop with fries, home-style breakfast and dinner, a Mega Soup & Seasons, sushi bowls, sushi rolls, and Build-Your-Own Poke."
+            },
+            "Late Night": {
+                location: "SU - Ground Floor (Inside of Refueling Station)",
+                description: "A fresh and made-to-order menu featuring diner-style favorites. Enjoy everything from a juicy Patty Melt to Hand-Breaded Chicken Tenders to a delicious Bacon, Egg and Cheese Croissant. All your cravings, all night long."
+            },
+            "Starbucks": {
+                location: "Student Union - 2nd Floor",
+                description: "It's an on-campus Starbucks! Enjoy your favorite high-quality whole bean coffees, rich-brewed, Italian style espresso beverages, premium Tazo Teas, pastries and confections, and coffee-related accessories and equipment."
+            },
+            "Simple Servings": {
+                location: "Res2 - Northeast Exterior (Inside of Boundless)",
+                description: "Simple Servings is our allergen-safe, dining option for our customers with food allergies or gluten intolerance. This station offers food free from peanuts, tree nuts, shellfish, wheat, soy, milk products, eggs, sesame seeds, and gluten-containing ingredients."
+            },
+            "Flight Café": {
+                location: "Flight Operations Building",
+                description: "Flight Café is a popular stop located in the Flight Operations building that provides quality fresh & hot breakfast and lunch options, prepackaged foods, as well as hot and cold beverages."
+            },
+            "Fuselage (off-campus)": {
+                location: "2339 Beville Rd. Daytona Beach",
+                description: "The Fuselage is located at the ERAU Information Technology Building and is available to the employees of ERAU Worldwide and the surrounding office locations. Fuselage offers a variety of fresh picks for breakfast and lunch, such as breakfast and lunch sandwhich options, bagels, salads and more."
+            },
+            "Virtual Dining Concept": {
+                location: "Order on Grubhub / Pickup at Propellers",
+                description: "Virtual dining offerings available for order exclusively through Grubhub for pickup at Propellers. Options include: Pardon My Cheese Steak, Ballpark Bites, Man-vs-Fries, Loaded burritos, and bold flavors."
+            },
+            "Food Hive (previously Eagle Mart)": {
+                location: "Student Village - Ground Floor",
+                description: "An on-campus convenience store with an array of snacks and drinks, microwaveable meals, toiletries, groceries, gifts and more."
+            },
+            "Propellers": {
+                location: "Student Union - Southwest Exterior",
+                description: "Propellers features homemade burgers, grilled chicken caesar salads, fried potato wedges, fried chicken, soft serve ice cream and more. Stop by Propellers and find out why they call it \"the Best Burger on Campus.\""
+            },
+            "Eagle Bites": {
+                location: "Mobile; Usually in Front of the SU or CoAS",
+                description: "A mobile cart offering convenient grab-and-go snacks, cold beverages, and rotating entrees. Perfect for students on the move between classes."
+            },
+            "LW EATS Food Truck": {
+                location: "Legacy Walk, Next to the College of Aviation",
+                description: "Rotating food truck experience serving specialized street food lunches."
+            }
+        };
+
         // ALL REGULAR HOURS
         const DINING_DATA = [
             {name: "Flight Café", schedule: {0: [["07:00", "14:30"]], 1: [["07:00", "14:30"]], 2: [["07:00", "14:30"]], 3: [["07:00", "14:30"]], 4: [["07:00", "14:30"]], 5: [], 6: []}},
