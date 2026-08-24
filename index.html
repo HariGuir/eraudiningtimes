@@ -40,7 +40,7 @@
         <!-- Open Now Section -->
         <section>
             <h2 class="text-sm font-semibold tracking-wider text-emerald-400 uppercase mb-3 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Open Now
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Open Now (Regular Hours)
             </h2>
             <div id="open-list" class="space-y-3">
                 <!-- Injected via JS -->
@@ -56,6 +56,41 @@
         </section>
     </main>
 
+    <!-- Bottom Sheet Modal -->
+    <div id="dining-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end justify-center transition-opacity duration-300 opacity-0 pointer-events-none" onclick="closeModal()">
+        <div id="modal-content" class="bg-zinc-900 border-t border-zinc-800 w-full max-w-md rounded-t-2xl p-5 space-y-4 transform translate-y-full transition-transform duration-300 max-h-[85vh] overflow-y-auto shadow-2xl" onclick="event.stopPropagation()">
+            <!-- Drag Handle Bar -->
+            <div class="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mb-2"></div>
+            
+            <!-- Modal Header -->
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 id="modal-title" class="text-lg font-bold text-white">Location Name</h3>
+                    <p id="modal-location" class="text-xs text-emerald-400 font-medium mt-0.5">📍 Building Info</p>
+                </div>
+                <button onclick="closeModal()" class="text-zinc-400 hover:text-white text-sm bg-zinc-800 px-2.5 py-1 rounded-lg">✕</button>
+            </div>
+
+            <!-- Light Image Preview -->
+            <div id="modal-image-container" class="w-full h-36 bg-zinc-800 rounded-xl overflow-hidden relative flex items-center justify-center text-zinc-500 text-xs">
+                <span>Loading Image...</span>
+            </div>
+
+            <!-- Description -->
+            <p id="modal-desc" class="text-xs text-zinc-300 leading-relaxed">
+                Loading Description...
+            </p>
+
+            <!-- Weekly Schedule Breakdown -->
+            <div class="border-t border-zinc-800 pt-3">
+                <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Weekly Hours</h4>
+                <div id="modal-schedule" class="space-y-1.5 text-xs text-zinc-300">
+                    <!-- Injected schedule rows -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- JavaScript Logic -->
     <script>
         // Descriptive metadata for locations (Location, Description)
@@ -133,7 +168,7 @@
         };
 
         // ALL REGULAR HOURS
-        const DINING_DATA = [
+        const DINING_TIMES = [
             {name: "Flight Café", schedule: {0: [["07:00", "14:30"]], 1: [["07:00", "14:30"]], 2: [["07:00", "14:30"]], 3: [["07:00", "14:30"]], 4: [["07:00", "14:30"]], 5: [], 6: []}},
             {name: "Chick-Fil-A", schedule: {0: [["07:30", "21:00"]], 1: [["07:30", "21:00"]], 2: [["07:30", "21:00"]], 3: [["07:30", "21:00"]], 4: [["07:30", "18:00"]], 5: [["11:00", "18:00"]], 6: []}},
             {name: "Boundless Buffet", schedule: {0: [["07:00", "21:00"]], 1: [["07:00", "21:00"]], 2: [["07:00", "21:00"]], 3: [["07:00", "21:00"]], 4: [["07:00", "21:00"]], 5: [["09:00", "21:00"]], 6: [["09:00", "21:00"]]}},
@@ -158,6 +193,52 @@
             let period = h >= 12 ? 'PM' : 'AM';
             h = h % 12 || 12;
             return `${h}:${m.toString().padStart(2, '0')} ${period}`;
+        }
+
+        function openModal(name) {
+            const item = DINING_DATA.find(d => d.name === name);
+            const meta = LOCATION_METADATA[name] || {
+                location: "Campus Dining Location",
+                description: "No description available.",
+                image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=60",
+            };
+
+            document.getElementById('modal-title').innerText = name;
+            document.getElementById('modal-location').innerText = `📍 ${meta.location}`;
+            document.getElementById('modal-desc').innerText = meta.description;
+            
+            // Image preview
+            if (meta.image) {
+                document.getElementById('modal-image-container').innerHTML = `
+                    <img src="${meta.image}" alt="${name}" class="w-full h-full object-cover opacity-90">
+                `;
+                document.getElementById('modal-image-container').style.display = 'block';
+            } else {
+                document.getElementById('modal-image-container').style.display = 'none';
+            }
+
+            // Weekly schedule rows
+            const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            let scheduleHTML = '';
+            daysOfWeek.forEach((dayName, idx) => {
+                let shifts = item.schedule[idx] || [];
+                let shiftStr = shifts.length === 0 ? '<span class="text-zinc-500">Closed</span>' : shifts.map(s => `${makeTimePretty(s[0])} - ${makeTimePretty(s[1])}`).join(', ');
+                scheduleHTML += `<div class="flex justify-between py-1 border-b border-zinc-800/40 text-[11px]"><span class="text-zinc-400">${dayName}</span><span class="font-medium text-right">${shiftStr}</span></div>`;
+            });
+            document.getElementById('modal-schedule').innerHTML = scheduleHTML;
+
+            // Show Modal with Animation
+            const modal = document.getElementById('dining-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            content.classList.remove('translate-y-full');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('dining-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.add('translate-y-full');
         }
 
         function renderDiningStatus() {
@@ -191,7 +272,7 @@
 
                 if (isOpen) {
                     openHTML += `
-                        <div class="bg-zinc-900 border border-zinc-800 p-3.5 rounded-xl flex justify-between items-center">
+                        <div onclick="openModal('${item.name}')" class="bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 p-3.5 rounded-xl flex justify-between items-center cursor-pointer transition active:scale-[0.99]">
                             <div>
                                 <h3 class="font-medium text-sm text-white">${item.name}</h3>
                                 <p class="text-xs text-zinc-400">Open until ${makeTimePretty(closingTimeStr)}</p>
@@ -280,7 +361,7 @@
                 }
 
                 closedHTML += `
-                    <div class="bg-zinc-900/50 border border-zinc-800/60 p-3 rounded-xl flex justify-between items-center opacity-75">
+                    <div onclick="openModal('${item.name}')" class="bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800/60 p-3 rounded-xl flex justify-between items-center opacity-75 cursor-pointer transition active:scale-[0.99]">
                         <div>
                             <h3 class="font-medium text-sm text-zinc-300">${item.name}</h3>
                             <p class="text-xs text-zinc-500">Closed until ${timeStr}</p>
@@ -289,7 +370,7 @@
                     </div>`;
             });
 
-            document.getElementById('open-list').innerHTML = openHTML || '<p class="text-xs text-zinc-500 italic">aw man, everything is closed :(</p>';
+            document.getElementById('open-list').innerHTML = openHTML || '<p class="text-xs text-zinc-500 italic">aw man... everything\'s closed :(</p>';
             document.getElementById('closed-list').innerHTML = closedHTML;
         }
 
