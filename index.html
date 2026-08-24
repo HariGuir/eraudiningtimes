@@ -196,7 +196,7 @@
         }
 
         function openModal(name) {
-            const item = DINING_DATA.find(d => d.name === name);
+            const item = DINING_TIMES.find(d => d.name === name);
             const meta = LOCATION_METADATA[name] || {
                 location: "Campus Dining Location",
                 description: "No description available.",
@@ -251,7 +251,7 @@
             let openHTML = '';
             let closedItems = [];
 
-            DINING_DATA.forEach(item => {
+            DINING_TIMES.forEach(item => {
                 let shifts = item.schedule[todayDay] || [];
                 let isOpen = false;
                 let closingTimeStr = '';
